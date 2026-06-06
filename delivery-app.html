@@ -1,0 +1,891 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#FF6B00">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>配達サポート</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --orange: #FF6B00;
+    --orange-dark: #CC5500;
+    --orange-light: #FF8C33;
+    --bg: #0F0F0F;
+    --surface: #1A1A1A;
+    --surface2: #242424;
+    --border: #333;
+    --text: #F0F0F0;
+    --text-muted: #888;
+    --green: #00C47A;
+    --red: #FF4444;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+  body {
+    font-family: 'Noto Sans JP', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100dvh;
+    overflow-x: hidden;
+  }
+
+  /* ===== HEADER ===== */
+  .header {
+    background: var(--surface);
+    border-bottom: 2px solid var(--orange);
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .header-title {
+    font-size: 18px;
+    font-weight: 900;
+    color: var(--orange);
+    letter-spacing: 0.05em;
+  }
+  .header-count {
+    background: var(--orange);
+    color: white;
+    font-size: 12px;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 20px;
+  }
+
+  /* ===== API KEY SETUP ===== */
+  .api-setup {
+    margin: 16px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px;
+  }
+  .api-setup-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--orange);
+    margin-bottom: 8px;
+  }
+  .api-input-row {
+    display: flex;
+    gap: 8px;
+  }
+  .api-input {
+    flex: 1;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 12px;
+    color: var(--text);
+    font-size: 13px;
+    font-family: monospace;
+  }
+  .api-input:focus { outline: none; border-color: var(--orange); }
+  .btn-save-api {
+    background: var(--orange);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 16px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .api-saved {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: var(--green);
+  }
+  .api-change-btn {
+    font-size: 12px;
+    color: var(--text-muted);
+    background: none;
+    border: none;
+    cursor: pointer;
+    text-decoration: underline;
+    margin-left: auto;
+  }
+
+  /* ===== TABS ===== */
+  .tabs {
+    display: flex;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 57px;
+    z-index: 99;
+  }
+  .tab {
+    flex: 1;
+    padding: 14px;
+    text-align: center;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text-muted);
+    border: none;
+    background: none;
+    cursor: pointer;
+    border-bottom: 3px solid transparent;
+    transition: all 0.2s;
+  }
+  .tab.active {
+    color: var(--orange);
+    border-bottom-color: var(--orange);
+  }
+
+  /* ===== PAGES ===== */
+  .page { display: none; padding: 16px; }
+  .page.active { display: block; }
+
+  /* ===== SCAN PAGE ===== */
+  .scan-step {
+    background: var(--surface);
+    border-radius: 16px;
+    padding: 20px;
+    margin-bottom: 16px;
+    border: 2px solid var(--border);
+    transition: border-color 0.3s;
+  }
+  .scan-step.active-step { border-color: var(--orange); }
+  .scan-step.done-step { border-color: var(--green); }
+
+  .step-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+  .step-num {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: 900;
+    background: var(--border);
+    color: var(--text-muted);
+    flex-shrink: 0;
+  }
+  .scan-step.active-step .step-num { background: var(--orange); color: white; }
+  .scan-step.done-step .step-num { background: var(--green); color: white; }
+  .step-label { font-size: 16px; font-weight: 700; }
+  .step-sub { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+
+  .preview-box {
+    width: 100%;
+    aspect-ratio: 4/3;
+    background: var(--bg);
+    border-radius: 10px;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 12px;
+    border: 1px dashed var(--border);
+  }
+  .preview-box img { width: 100%; height: 100%; object-fit: cover; }
+  .preview-placeholder { color: var(--text-muted); font-size: 13px; text-align: center; }
+  .preview-placeholder span { font-size: 36px; display: block; margin-bottom: 8px; }
+
+  .btn-camera {
+    width: 100%;
+    padding: 16px;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: 900;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    transition: opacity 0.2s, transform 0.1s;
+  }
+  .btn-camera:active { transform: scale(0.97); }
+  .btn-camera.primary { background: var(--orange); color: white; }
+  .btn-camera.secondary { background: var(--surface2); color: var(--text); }
+  .btn-camera:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  input[type="file"] { display: none; }
+
+  .ocr-result {
+    background: var(--bg);
+    border-radius: 8px;
+    padding: 12px;
+    margin-top: 12px;
+    font-size: 13px;
+    border: 1px solid var(--border);
+  }
+  .ocr-label { color: var(--text-muted); font-size: 11px; margin-bottom: 4px; }
+  .ocr-value { font-weight: 700; color: var(--text); }
+  .ocr-edit {
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid var(--border);
+    color: var(--text);
+    font-size: 13px;
+    font-weight: 700;
+    width: 100%;
+    padding: 4px 0;
+    font-family: 'Noto Sans JP', sans-serif;
+  }
+  .ocr-edit:focus { outline: none; border-bottom-color: var(--orange); }
+
+  .btn-register {
+    width: 100%;
+    padding: 18px;
+    background: var(--green);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-size: 18px;
+    font-weight: 900;
+    cursor: pointer;
+    margin-top: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    transition: opacity 0.2s, transform 0.1s;
+  }
+  .btn-register:active { transform: scale(0.97); }
+  .btn-register:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  .btn-reset {
+    width: 100%;
+    padding: 14px;
+    background: var(--surface2);
+    color: var(--text-muted);
+    border: none;
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    margin-top: 10px;
+  }
+
+  .ocr-loading {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: var(--orange);
+    margin-top: 10px;
+  }
+  .spinner {
+    width: 16px;
+    height: 16px;
+    border: 2px solid var(--border);
+    border-top-color: var(--orange);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%) translateY(100px);
+    background: var(--green);
+    color: white;
+    padding: 12px 24px;
+    border-radius: 50px;
+    font-size: 14px;
+    font-weight: 700;
+    z-index: 999;
+    transition: transform 0.3s ease;
+    white-space: nowrap;
+  }
+  .toast.show { transform: translateX(-50%) translateY(0); }
+  .toast.error { background: var(--red); }
+
+  /* ===== LIST PAGE ===== */
+  .search-bar {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+  .search-input {
+    flex: 1;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 16px;
+    color: var(--text);
+    font-size: 15px;
+    font-family: 'Noto Sans JP', sans-serif;
+  }
+  .search-input:focus { outline: none; border-color: var(--orange); }
+
+  .empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--text-muted);
+  }
+  .empty-state span { font-size: 48px; display: block; margin-bottom: 12px; }
+  .empty-state p { font-size: 14px; line-height: 1.6; }
+
+  .item-card {
+    background: var(--surface);
+    border-radius: 14px;
+    margin-bottom: 12px;
+    border: 1px solid var(--border);
+    overflow: hidden;
+    transition: border-color 0.2s;
+  }
+  .item-card:active { border-color: var(--orange); }
+
+  .item-header {
+    padding: 14px 16px 10px;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 8px;
+  }
+  .item-info { flex: 1; min-width: 0; }
+  .item-name {
+    font-size: 17px;
+    font-weight: 900;
+    margin-bottom: 4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .item-address {
+    font-size: 13px;
+    color: var(--text-muted);
+    line-height: 1.4;
+  }
+  .item-time {
+    font-size: 11px;
+    color: var(--text-muted);
+    white-space: nowrap;
+  }
+
+  .item-images {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2px;
+  }
+  .item-img {
+    aspect-ratio: 4/3;
+    object-fit: cover;
+    width: 100%;
+    cursor: pointer;
+  }
+  .item-img-label {
+    position: relative;
+  }
+  .item-img-label::after {
+    content: attr(data-label);
+    position: absolute;
+    top: 6px;
+    left: 6px;
+    background: rgba(0,0,0,0.7);
+    color: white;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 6px;
+    border-radius: 4px;
+  }
+
+  .item-actions {
+    display: flex;
+    gap: 1px;
+    background: var(--border);
+  }
+  .item-action-btn {
+    flex: 1;
+    padding: 12px;
+    background: var(--surface2);
+    color: var(--text);
+    border: none;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    transition: background 0.2s;
+  }
+  .item-action-btn:active { background: var(--border); }
+  .item-action-btn.nav { color: var(--orange); }
+  .item-action-btn.del { color: var(--red); }
+  .item-action-btn.done { color: var(--green); }
+
+  .item-card.delivered { opacity: 0.5; }
+  .item-card.delivered .item-name::after {
+    content: " ✓";
+    color: var(--green);
+  }
+
+  /* ===== IMAGE MODAL ===== */
+  .modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.92);
+    z-index: 500;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+  }
+  .modal.show { display: flex; }
+  .modal img {
+    max-width: 100%;
+    max-height: 90dvh;
+    border-radius: 8px;
+    object-fit: contain;
+  }
+  .modal-close {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    background: var(--surface);
+    border: none;
+    color: var(--text);
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    font-size: 20px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-title">📦 配達サポート</div>
+  <div class="header-count" id="headerCount">0件</div>
+</div>
+
+<!-- API KEY SETUP -->
+<div class="api-setup" id="apiSetup">
+  <div class="api-setup-title">🔑 Google Cloud Vision APIキー設定</div>
+  <div class="api-input-row" id="apiInputRow">
+    <input type="password" class="api-input" id="apiKeyInput" placeholder="AIza...">
+    <button class="btn-save-api" onclick="saveApiKey()">保存</button>
+  </div>
+</div>
+
+<!-- TABS -->
+<div class="tabs">
+  <button class="tab active" onclick="switchTab('scan')">📸 撮影・登録</button>
+  <button class="tab" onclick="switchTab('list')">📋 荷物一覧</button>
+</div>
+
+<!-- SCAN PAGE -->
+<div class="page active" id="page-scan">
+
+  <!-- STEP 1: 伝票 -->
+  <div class="scan-step active-step" id="step1">
+    <div class="step-header">
+      <div class="step-num">1</div>
+      <div>
+        <div class="step-label">伝票を撮影</div>
+        <div class="step-sub">住所・名前をOCRで自動読取</div>
+      </div>
+    </div>
+    <div class="preview-box" id="slipPreviewBox">
+      <div class="preview-placeholder"><span>🧾</span>伝票画像がここに表示されます</div>
+    </div>
+    <div id="ocrLoading" class="ocr-loading" style="display:none;">
+      <div class="spinner"></div> OCR読み取り中...
+    </div>
+    <div class="ocr-result" id="ocrResult" style="display:none;">
+      <div class="ocr-label">📍 住所（編集可）</div>
+      <input type="text" class="ocr-edit" id="ocrAddress" placeholder="住所">
+      <div class="ocr-label" style="margin-top:10px;">👤 名前（編集可）</div>
+      <input type="text" class="ocr-edit" id="ocrName" placeholder="氏名">
+    </div>
+    <input type="file" accept="image/*" capture="environment" id="slipInput" onchange="handleSlipPhoto(event)">
+    <button class="btn-camera primary" onclick="document.getElementById('slipInput').click()">
+      📷 伝票を撮影する
+    </button>
+  </div>
+
+  <!-- STEP 2: 荷物 -->
+  <div class="scan-step" id="step2">
+    <div class="step-header">
+      <div class="step-num">2</div>
+      <div>
+        <div class="step-label">荷物を撮影</div>
+        <div class="step-sub">荷物の外観・特徴を撮る</div>
+      </div>
+    </div>
+    <div class="preview-box" id="itemPreviewBox">
+      <div class="preview-placeholder"><span>📦</span>荷物画像がここに表示されます</div>
+    </div>
+    <input type="file" accept="image/*" capture="environment" id="itemInput" onchange="handleItemPhoto(event)">
+    <button class="btn-camera primary" id="btnItemCamera" onclick="document.getElementById('itemInput').click()" disabled>
+      📷 荷物を撮影する
+    </button>
+  </div>
+
+  <!-- 登録ボタン -->
+  <button class="btn-register" id="btnRegister" onclick="registerDelivery()" disabled>
+    ✅ この荷物を登録する
+  </button>
+  <button class="btn-reset" onclick="resetScan()">🔄 やり直す</button>
+</div>
+
+<!-- LIST PAGE -->
+<div class="page" id="page-list">
+  <div class="search-bar">
+    <input type="search" class="search-input" id="searchInput" placeholder="🔍 名前・住所で検索..." oninput="renderList()">
+  </div>
+  <div id="listContainer"></div>
+</div>
+
+<!-- IMAGE MODAL -->
+<div class="modal" id="imgModal" onclick="closeModal()">
+  <button class="modal-close">✕</button>
+  <img id="modalImg" src="">
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ===== STATE =====
+let slipDataUrl = null;
+let itemDataUrl = null;
+let ocrAddressVal = '';
+let ocrNameVal = '';
+let deliveries = [];
+let apiKey = '';
+
+// ===== INIT =====
+function init() {
+  apiKey = localStorage.getItem('visionApiKey') || '';
+  updateApiUI();
+
+  const today = new Date().toDateString();
+  const saved = localStorage.getItem('deliveries_date');
+  if (saved === today) {
+    deliveries = JSON.parse(localStorage.getItem('deliveries') || '[]');
+  } else {
+    deliveries = [];
+    localStorage.setItem('deliveries_date', today);
+    localStorage.setItem('deliveries', '[]');
+  }
+  updateCount();
+  renderList();
+}
+
+// ===== API KEY =====
+function saveApiKey() {
+  const val = document.getElementById('apiKeyInput').value.trim();
+  if (!val) return showToast('APIキーを入力してください', true);
+  apiKey = val;
+  localStorage.setItem('visionApiKey', val);
+  updateApiUI();
+  showToast('APIキーを保存しました');
+}
+
+function updateApiUI() {
+  const setup = document.getElementById('apiSetup');
+  const row = document.getElementById('apiInputRow');
+  if (apiKey) {
+    row.innerHTML = `
+      <div class="api-saved">✅ APIキー設定済み
+        <button class="api-change-btn" onclick="changeApiKey()">変更</button>
+      </div>`;
+  }
+}
+
+function changeApiKey() {
+  document.getElementById('apiInputRow').innerHTML = `
+    <input type="password" class="api-input" id="apiKeyInput" value="${apiKey}" placeholder="AIza...">
+    <button class="btn-save-api" onclick="saveApiKey()">保存</button>`;
+}
+
+// ===== TABS =====
+function switchTab(tab) {
+  document.querySelectorAll('.tab').forEach((t,i) => t.classList.toggle('active', (tab==='scan'&&i===0)||(tab==='list'&&i===1)));
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-'+tab).classList.add('active');
+  if (tab === 'list') renderList();
+}
+
+// ===== PHOTO HANDLING =====
+function handleSlipPhoto(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = async (ev) => {
+    slipDataUrl = ev.target.result;
+    const box = document.getElementById('slipPreviewBox');
+    box.innerHTML = `<img src="${slipDataUrl}" alt="伝票">`;
+    document.getElementById('step1').classList.add('done-step');
+    document.getElementById('step1').classList.remove('active-step');
+    document.getElementById('step2').classList.add('active-step');
+    document.getElementById('btnItemCamera').disabled = false;
+    await runOcr(slipDataUrl);
+  };
+  reader.readAsDataURL(file);
+  e.target.value = '';
+}
+
+function handleItemPhoto(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (ev) => {
+    itemDataUrl = ev.target.result;
+    const box = document.getElementById('itemPreviewBox');
+    box.innerHTML = `<img src="${itemDataUrl}" alt="荷物">`;
+    document.getElementById('step2').classList.add('done-step');
+    document.getElementById('step2').classList.remove('active-step');
+    document.getElementById('btnRegister').disabled = false;
+  };
+  reader.readAsDataURL(file);
+  e.target.value = '';
+}
+
+// ===== OCR =====
+async function runOcr(dataUrl) {
+  if (!apiKey) {
+    document.getElementById('ocrResult').style.display = 'block';
+    return;
+  }
+  document.getElementById('ocrLoading').style.display = 'flex';
+
+  try {
+    const base64 = dataUrl.split(',')[1];
+    const res = await fetch(`https://vision.googleapis.com/v1/images:annotate?key=${apiKey}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        requests: [{
+          image: { content: base64 },
+          features: [{ type: 'TEXT_DETECTION', maxResults: 1 }]
+        }]
+      })
+    });
+    const data = await res.json();
+    const text = data.responses?.[0]?.fullTextAnnotation?.text || '';
+    const { address, name } = parseDeliveryText(text);
+    ocrAddressVal = address;
+    ocrNameVal = name;
+    document.getElementById('ocrAddress').value = address;
+    document.getElementById('ocrName').value = name;
+  } catch(err) {
+    console.error(err);
+  }
+
+  document.getElementById('ocrLoading').style.display = 'none';
+  document.getElementById('ocrResult').style.display = 'block';
+}
+
+function parseDeliveryText(text) {
+  const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
+  let address = '';
+  let name = '';
+
+  // 住所パターン（都道府県・市区町村・番地）
+  const addrPattern = /([都道府県].{2,20}[市区町村].{1,30}[0-9０-９\-－]/;
+  for (const line of lines) {
+    if (addrPattern.test(line) || /[0-9０-９]丁目|[0-9０-９]番|[0-9０-９]号/.test(line)) {
+      address = line;
+      break;
+    }
+  }
+  // 住所が見つからない場合は〒以降の行
+  if (!address) {
+    const zipIdx = lines.findIndex(l => /〒|[0-9]{3}-[0-9]{4}/.test(l));
+    if (zipIdx >= 0 && lines[zipIdx+1]) address = lines[zipIdx+1];
+  }
+
+  // 名前パターン（様・御中・殿が含まれる行）
+  for (const line of lines) {
+    if (/様|御中|殿/.test(line)) {
+      name = line.replace(/様|御中|殿/g, '').trim();
+      break;
+    }
+  }
+  // 見つからなければ短い行（2〜10文字）
+  if (!name) {
+    for (const line of lines) {
+      if (line.length >= 2 && line.length <= 10 && /^[ぁ-んァ-ン一-龥]/.test(line)) {
+        name = line;
+        break;
+      }
+    }
+  }
+
+  return { address, name };
+}
+
+// ===== REGISTER =====
+function registerDelivery() {
+  const address = document.getElementById('ocrAddress')?.value || ocrAddressVal;
+  const name = document.getElementById('ocrName')?.value || ocrNameVal;
+
+  if (!slipDataUrl || !itemDataUrl) {
+    showToast('伝票と荷物両方の撮影が必要です', true);
+    return;
+  }
+
+  const delivery = {
+    id: Date.now(),
+    name: name || '名前未読取',
+    address: address || '住所未読取',
+    slipImg: slipDataUrl,
+    itemImg: itemDataUrl,
+    time: new Date().toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' }),
+    delivered: false
+  };
+
+  deliveries.unshift(delivery);
+  saveDeliveries();
+  updateCount();
+  showToast('✅ 登録しました！');
+  resetScan();
+  switchTab('list');
+}
+
+// ===== RESET =====
+function resetScan() {
+  slipDataUrl = null;
+  itemDataUrl = null;
+  ocrAddressVal = '';
+  ocrNameVal = '';
+
+  document.getElementById('slipPreviewBox').innerHTML = `<div class="preview-placeholder"><span>🧾</span>伝票画像がここに表示されます</div>`;
+  document.getElementById('itemPreviewBox').innerHTML = `<div class="preview-placeholder"><span>📦</span>荷物画像がここに表示されます</div>`;
+  document.getElementById('ocrResult').style.display = 'none';
+  document.getElementById('ocrLoading').style.display = 'none';
+  document.getElementById('btnItemCamera').disabled = true;
+  document.getElementById('btnRegister').disabled = true;
+
+  document.getElementById('step1').className = 'scan-step active-step';
+  document.getElementById('step2').className = 'scan-step';
+}
+
+// ===== LIST =====
+function renderList() {
+  const q = (document.getElementById('searchInput')?.value || '').trim();
+  const filtered = q
+    ? deliveries.filter(d =>
+        d.name.includes(q) || d.address.includes(q)
+      )
+    : deliveries;
+
+  const container = document.getElementById('listContainer');
+
+  if (filtered.length === 0) {
+    container.innerHTML = `<div class="empty-state">
+      <span>${q ? '🔍' : '📭'}</span>
+      <p>${q ? `「${q}」に一致する荷物がありません` : '登録された荷物がありません\n撮影タブから登録してください'}</p>
+    </div>`;
+    return;
+  }
+
+  container.innerHTML = filtered.map(d => `
+    <div class="item-card ${d.delivered ? 'delivered' : ''}" id="card-${d.id}">
+      <div class="item-header">
+        <div class="item-info">
+          <div class="item-name">${escHtml(d.name)}</div>
+          <div class="item-address">${escHtml(d.address)}</div>
+        </div>
+        <div class="item-time">${d.time}</div>
+      </div>
+      <div class="item-images">
+        <div class="item-img-label" data-label="伝票" style="position:relative">
+          <img class="item-img" src="${d.slipImg}" alt="伝票" onclick="openModal('${d.id}','slip')">
+        </div>
+        <div class="item-img-label" data-label="荷物" style="position:relative">
+          <img class="item-img" src="${d.itemImg}" alt="荷物" onclick="openModal('${d.id}','item')">
+        </div>
+      </div>
+      <div class="item-actions">
+        <button class="item-action-btn nav" onclick="openNav('${escHtml(d.address)}')">🗺️ ナビ</button>
+        <button class="item-action-btn done" onclick="toggleDelivered(${d.id})">${d.delivered ? '↩️ 戻す' : '✅ 配達済'}</button>
+        <button class="item-action-btn del" onclick="deleteDelivery(${d.id})">🗑️ 削除</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function openNav(address) {
+  if (!address || address === '住所未読取') {
+    showToast('住所が読み取れていません', true);
+    return;
+  }
+  const url = `https://maps.google.com/maps?q=${encodeURIComponent(address)}`;
+  window.open(url, '_blank');
+}
+
+function toggleDelivered(id) {
+  const d = deliveries.find(x => x.id === id);
+  if (d) { d.delivered = !d.delivered; saveDeliveries(); renderList(); }
+}
+
+function deleteDelivery(id) {
+  if (!confirm('この荷物を削除しますか？')) return;
+  deliveries = deliveries.filter(x => x.id !== id);
+  saveDeliveries();
+  updateCount();
+  renderList();
+}
+
+// ===== MODAL =====
+function openModal(id, type) {
+  const d = deliveries.find(x => x.id == id);
+  if (!d) return;
+  document.getElementById('modalImg').src = type === 'slip' ? d.slipImg : d.itemImg;
+  document.getElementById('imgModal').classList.add('show');
+}
+function closeModal() {
+  document.getElementById('imgModal').classList.remove('show');
+}
+
+// ===== HELPERS =====
+function saveDeliveries() {
+  localStorage.setItem('deliveries', JSON.stringify(deliveries));
+}
+
+function updateCount() {
+  const undone = deliveries.filter(d => !d.delivered).length;
+  document.getElementById('headerCount').textContent = `${deliveries.length}件（未配達${undone}）`;
+}
+
+function showToast(msg, isError = false) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast' + (isError ? ' error' : '');
+  void t.offsetWidth;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+function escHtml(str) {
+  return (str||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ===== START =====
+init();
+</script>
+</body>
+</html>
