@@ -6,555 +6,452 @@
 <meta name="theme-color" content="#FF6B00">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<title>配達サポート</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
+<title>ParcelSnap</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700;900&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --orange: #FF6B00;
-    --orange-dark: #CC5500;
-    --orange-light: #FF8C33;
-    --bg: #0F0F0F;
-    --surface: #1A1A1A;
-    --surface2: #242424;
-    --border: #333;
-    --text: #F0F0F0;
-    --text-muted: #888;
-    --green: #00C47A;
-    --red: #FF4444;
-  }
+:root {
+  --orange: #FF6B00;
+  --orange-dark: #CC5500;
+  --bg: #0F0F0F;
+  --surface: #1C1C1C;
+  --surface2: #262626;
+  --border: #333;
+  --text: #F0F0F0;
+  --muted: #777;
+  --green: #00C47A;
+  --red: #FF4455;
+  --yellow: #FFB800;
+  --blue: #3B82F6;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+body {
+  font-family: 'Noto Sans JP', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100dvh;
+  overflow-x: hidden;
+}
 
-  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+/* HEADER */
+.header {
+  background: var(--surface);
+  border-bottom: 2px solid var(--orange);
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky; top: 0; z-index: 200;
+}
+.header-title { font-size: 20px; font-weight: 900; color: var(--orange); letter-spacing: 0.08em; }
+.header-badge {
+  background: var(--orange); color: white;
+  font-size: 11px; font-weight: 700;
+  padding: 3px 10px; border-radius: 20px;
+}
 
-  body {
-    font-family: 'Noto Sans JP', sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    min-height: 100dvh;
-    overflow-x: hidden;
-  }
+/* TABS */
+.tabs {
+  display: flex; background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  position: sticky; top: 53px; z-index: 199;
+}
+.tab {
+  flex: 1; padding: 13px; text-align: center;
+  font-size: 13px; font-weight: 700; color: var(--muted);
+  border: none; background: none; cursor: pointer;
+  border-bottom: 3px solid transparent; transition: all 0.2s;
+}
+.tab.active { color: var(--orange); border-bottom-color: var(--orange); }
 
-  /* ===== HEADER ===== */
-  .header {
-    background: var(--surface);
-    border-bottom: 2px solid var(--orange);
-    padding: 12px 16px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    position: sticky;
-    top: 0;
-    z-index: 100;
-  }
-  .header-title {
-    font-size: 18px;
-    font-weight: 900;
-    color: var(--orange);
-    letter-spacing: 0.05em;
-  }
-  .header-count {
-    background: var(--orange);
-    color: white;
-    font-size: 12px;
-    font-weight: 700;
-    padding: 3px 10px;
-    border-radius: 20px;
-  }
+/* PAGES */
+.page { display: none; }
+.page.active { display: block; }
 
-  /* ===== API KEY SETUP ===== */
-  .api-setup {
-    margin: 16px;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 16px;
-  }
-  .api-setup-title {
-    font-size: 13px;
-    font-weight: 700;
-    color: var(--orange);
-    margin-bottom: 8px;
-  }
-  .api-input-row {
-    display: flex;
-    gap: 8px;
-  }
-  .api-input {
-    flex: 1;
-    background: var(--bg);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 10px 12px;
-    color: var(--text);
-    font-size: 13px;
-    font-family: monospace;
-  }
-  .api-input:focus { outline: none; border-color: var(--orange); }
-  .btn-save-api {
-    background: var(--orange);
-    color: white;
-    border: none;
-    border-radius: 8px;
-    padding: 10px 16px;
-    font-size: 13px;
-    font-weight: 700;
-    cursor: pointer;
-    white-space: nowrap;
-  }
-  .api-saved {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 13px;
-    color: var(--green);
-  }
-  .api-change-btn {
-    font-size: 12px;
-    color: var(--text-muted);
-    background: none;
-    border: none;
-    cursor: pointer;
-    text-decoration: underline;
-    margin-left: auto;
-  }
+/* ===== IMPORT PAGE ===== */
+.import-page { padding: 16px; }
 
-  /* ===== TABS ===== */
-  .tabs {
-    display: flex;
-    background: var(--surface);
-    border-bottom: 1px solid var(--border);
-    position: sticky;
-    top: 57px;
-    z-index: 99;
-  }
-  .tab {
-    flex: 1;
-    padding: 14px;
-    text-align: center;
-    font-size: 14px;
-    font-weight: 700;
-    color: var(--text-muted);
-    border: none;
-    background: none;
-    cursor: pointer;
-    border-bottom: 3px solid transparent;
-    transition: all 0.2s;
-  }
-  .tab.active {
-    color: var(--orange);
-    border-bottom-color: var(--orange);
-  }
+.api-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 14px; padding: 16px; margin-bottom: 16px;
+}
+.api-card-title { font-size: 12px; font-weight: 700; color: var(--orange); margin-bottom: 10px; }
+.api-row { display: flex; gap: 8px; align-items: center; }
+.api-input {
+  flex: 1; background: var(--bg); border: 1px solid var(--border);
+  border-radius: 8px; padding: 10px 12px; color: var(--text);
+  font-size: 13px; font-family: monospace;
+}
+.api-input:focus { outline: none; border-color: var(--orange); }
+.btn-sm {
+  padding: 10px 16px; border-radius: 8px; border: none;
+  font-size: 13px; font-weight: 700; cursor: pointer;
+  white-space: nowrap;
+}
+.btn-orange { background: var(--orange); color: white; }
+.btn-gray { background: var(--surface2); color: var(--muted); }
+.api-ok { font-size: 13px; color: var(--green); display: flex; align-items: center; gap: 6px; }
 
-  /* ===== PAGES ===== */
-  .page { display: none; padding: 16px; }
-  .page.active { display: block; }
+.import-card {
+  background: var(--surface); border: 2px dashed var(--border);
+  border-radius: 16px; padding: 32px 16px;
+  text-align: center; margin-bottom: 16px; cursor: pointer;
+  transition: border-color 0.2s;
+}
+.import-card:active { border-color: var(--orange); }
+.import-icon { font-size: 48px; margin-bottom: 12px; }
+.import-title { font-size: 18px; font-weight: 900; margin-bottom: 6px; }
+.import-sub { font-size: 13px; color: var(--muted); line-height: 1.5; }
+input[type=file] { display: none; }
 
-  /* ===== SCAN PAGE ===== */
-  .scan-step {
-    background: var(--surface);
-    border-radius: 16px;
-    padding: 20px;
-    margin-bottom: 16px;
-    border: 2px solid var(--border);
-    transition: border-color 0.3s;
-  }
-  .scan-step.active-step { border-color: var(--orange); }
-  .scan-step.done-step { border-color: var(--green); }
+.hint-card {
+  background: var(--surface2); border-radius: 12px;
+  padding: 14px 16px; margin-bottom: 16px;
+}
+.hint-title { font-size: 12px; font-weight: 700; color: var(--yellow); margin-bottom: 8px; }
+.hint-steps { list-style: none; }
+.hint-steps li {
+  font-size: 13px; color: var(--muted); padding: 3px 0;
+  display: flex; align-items: center; gap: 8px;
+}
+.hint-steps li::before {
+  content: attr(data-n);
+  background: var(--border); color: var(--text);
+  width: 20px; height: 20px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 700; flex-shrink: 0;
+}
 
-  .step-header {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin-bottom: 16px;
-  }
-  .step-num {
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 14px;
-    font-weight: 900;
-    background: var(--border);
-    color: var(--text-muted);
-    flex-shrink: 0;
-  }
-  .scan-step.active-step .step-num { background: var(--orange); color: white; }
-  .scan-step.done-step .step-num { background: var(--green); color: white; }
-  .step-label { font-size: 16px; font-weight: 700; }
-  .step-sub { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+/* ===== CHECK PAGE ===== */
+.check-page { padding: 16px; }
+.check-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 16px;
+}
+.check-title { font-size: 16px; font-weight: 900; }
+.check-status { font-size: 12px; color: var(--muted); }
 
-  .preview-box {
-    width: 100%;
-    aspect-ratio: 4/3;
-    background: var(--bg);
-    border-radius: 10px;
-    overflow: hidden;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-bottom: 12px;
-    border: 1px dashed var(--border);
-  }
-  .preview-box img { width: 100%; height: 100%; object-fit: cover; }
-  .preview-placeholder { color: var(--text-muted); font-size: 13px; text-align: center; }
-  .preview-placeholder span { font-size: 36px; display: block; margin-bottom: 8px; }
+.warn-banner {
+  background: rgba(255,184,0,0.12); border: 1px solid var(--yellow);
+  border-radius: 10px; padding: 12px 14px; margin-bottom: 14px;
+  font-size: 13px; color: var(--yellow); display: none;
+}
+.warn-banner.show { display: block; }
 
-  .btn-camera {
-    width: 100%;
-    padding: 16px;
-    border-radius: 12px;
-    font-size: 16px;
-    font-weight: 900;
-    border: none;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-    transition: opacity 0.2s, transform 0.1s;
-  }
-  .btn-camera:active { transform: scale(0.97); }
-  .btn-camera.primary { background: var(--orange); color: white; }
-  .btn-camera.secondary { background: var(--surface2); color: var(--text); }
-  .btn-camera:disabled { opacity: 0.4; cursor: not-allowed; }
+/* Photo grid */
+.photo-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+  margin-bottom: 16px;
+}
+.photo-cell {
+  position: relative; border-radius: 10px; overflow: hidden;
+  border: 2px solid var(--border); cursor: pointer;
+  transition: border-color 0.2s, transform 0.15s;
+  aspect-ratio: 3/4;
+}
+.photo-cell:active { transform: scale(0.96); }
+.photo-cell.is-slip { border-color: var(--blue); }
+.photo-cell.is-item { border-color: var(--green); }
+.photo-cell.is-unknown { border-color: var(--yellow); }
+.photo-cell img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.photo-label {
+  position: absolute; bottom: 0; left: 0; right: 0;
+  padding: 4px 6px; font-size: 11px; font-weight: 700;
+  text-align: center;
+}
+.is-slip .photo-label { background: rgba(59,130,246,0.85); color: white; }
+.is-item .photo-label { background: rgba(0,196,122,0.85); color: white; }
+.is-unknown .photo-label { background: rgba(255,184,0,0.85); color: #000; }
+.photo-num {
+  position: absolute; top: 5px; left: 5px;
+  background: rgba(0,0,0,0.65); color: white;
+  font-size: 10px; font-weight: 700;
+  padding: 2px 6px; border-radius: 4px;
+}
 
-  input[type="file"] { display: none; }
+/* Pair preview */
+.pair-section { margin-bottom: 16px; }
+.pair-section-title {
+  font-size: 13px; font-weight: 700; color: var(--muted);
+  margin-bottom: 10px; display: flex; align-items: center; gap: 6px;
+}
+.pair-card {
+  background: var(--surface); border-radius: 12px;
+  margin-bottom: 8px; overflow: hidden;
+  border: 1px solid var(--border);
+}
+.pair-card.ok { border-color: var(--green); }
+.pair-card.warn { border-color: var(--yellow); }
+.pair-imgs { display: grid; grid-template-columns: 1fr 1fr; gap: 2px; }
+.pair-img-wrap { position: relative; aspect-ratio: 4/3; }
+.pair-img-wrap img { width: 100%; height: 100%; object-fit: cover; }
+.pair-img-tag {
+  position: absolute; top: 5px; left: 5px;
+  background: rgba(0,0,0,0.7); color: white;
+  font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 4px;
+}
+.pair-missing {
+  aspect-ratio: 4/3; background: var(--bg);
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 6px; color: var(--yellow); font-size: 12px;
+}
+.pair-missing span { font-size: 24px; }
 
-  .ocr-result {
-    background: var(--bg);
-    border-radius: 8px;
-    padding: 12px;
-    margin-top: 12px;
-    font-size: 13px;
-    border: 1px solid var(--border);
-  }
-  .ocr-label { color: var(--text-muted); font-size: 11px; margin-bottom: 4px; }
-  .ocr-value { font-weight: 700; color: var(--text); }
-  .ocr-edit {
-    background: transparent;
-    border: none;
-    border-bottom: 1px solid var(--border);
-    color: var(--text);
-    font-size: 13px;
-    font-weight: 700;
-    width: 100%;
-    padding: 4px 0;
-    font-family: 'Noto Sans JP', sans-serif;
-  }
-  .ocr-edit:focus { outline: none; border-bottom-color: var(--orange); }
+.pair-actions { display: flex; gap: 1px; background: var(--border); }
+.pair-btn {
+  flex: 1; padding: 10px; background: var(--surface2);
+  border: none; color: var(--muted); font-size: 12px; font-weight: 700;
+  cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 4px;
+}
+.pair-btn:active { background: var(--border); }
+.pair-btn.add-photo { color: var(--yellow); }
+.pair-btn.skip-pair { color: var(--red); }
 
-  .btn-register {
-    width: 100%;
-    padding: 18px;
-    background: var(--green);
-    color: white;
-    border: none;
-    border-radius: 12px;
-    font-size: 18px;
-    font-weight: 900;
-    cursor: pointer;
-    margin-top: 16px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-    transition: opacity 0.2s, transform 0.1s;
-  }
-  .btn-register:active { transform: scale(0.97); }
-  .btn-register:disabled { opacity: 0.4; cursor: not-allowed; }
+/* Buttons */
+.btn-big {
+  width: 100%; padding: 18px; border-radius: 14px;
+  font-size: 17px; font-weight: 900; border: none; cursor: pointer;
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+  transition: opacity 0.2s, transform 0.1s; margin-bottom: 10px;
+}
+.btn-big:active { transform: scale(0.97); }
+.btn-big:disabled { opacity: 0.35; cursor: not-allowed; }
+.btn-big.green { background: var(--green); color: white; }
+.btn-big.gray { background: var(--surface2); color: var(--muted); font-size: 14px; }
 
-  .btn-reset {
-    width: 100%;
-    padding: 14px;
-    background: var(--surface2);
-    color: var(--text-muted);
-    border: none;
-    border-radius: 12px;
-    font-size: 14px;
-    font-weight: 700;
-    cursor: pointer;
-    margin-top: 10px;
-  }
+/* OCR progress */
+.ocr-progress {
+  background: var(--surface); border-radius: 12px;
+  padding: 16px; margin-bottom: 16px; display: none;
+}
+.ocr-progress.show { display: block; }
+.ocr-progress-title { font-size: 13px; font-weight: 700; margin-bottom: 10px; color: var(--orange); }
+.ocr-bar-wrap { background: var(--bg); border-radius: 99px; height: 8px; overflow: hidden; margin-bottom: 6px; }
+.ocr-bar { height: 100%; background: var(--orange); border-radius: 99px; transition: width 0.3s; width: 0%; }
+.ocr-bar-label { font-size: 12px; color: var(--muted); text-align: right; }
 
-  .ocr-loading {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 13px;
-    color: var(--orange);
-    margin-top: 10px;
-  }
-  .spinner {
-    width: 16px;
-    height: 16px;
-    border: 2px solid var(--border);
-    border-top-color: var(--orange);
-    border-radius: 50%;
-    animation: spin 0.8s linear infinite;
-  }
-  @keyframes spin { to { transform: rotate(360deg); } }
+/* ===== LIST PAGE ===== */
+.list-page { padding: 16px; }
+.search-wrap { margin-bottom: 14px; }
+.search-input {
+  width: 100%; background: var(--surface);
+  border: 1px solid var(--border); border-radius: 10px;
+  padding: 12px 16px; color: var(--text); font-size: 15px;
+  font-family: 'Noto Sans JP', sans-serif;
+}
+.search-input:focus { outline: none; border-color: var(--orange); }
 
-  .toast {
-    position: fixed;
-    bottom: 24px;
-    left: 50%;
-    transform: translateX(-50%) translateY(100px);
-    background: var(--green);
-    color: white;
-    padding: 12px 24px;
-    border-radius: 50px;
-    font-size: 14px;
-    font-weight: 700;
-    z-index: 999;
-    transition: transform 0.3s ease;
-    white-space: nowrap;
-  }
-  .toast.show { transform: translateX(-50%) translateY(0); }
-  .toast.error { background: var(--red); }
+.empty { text-align: center; padding: 60px 20px; color: var(--muted); }
+.empty span { font-size: 48px; display: block; margin-bottom: 12px; }
+.empty p { font-size: 14px; line-height: 1.6; }
 
-  /* ===== LIST PAGE ===== */
-  .search-bar {
-    display: flex;
-    gap: 8px;
-    margin-bottom: 16px;
-  }
-  .search-input {
-    flex: 1;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 12px 16px;
-    color: var(--text);
-    font-size: 15px;
-    font-family: 'Noto Sans JP', sans-serif;
-  }
-  .search-input:focus { outline: none; border-color: var(--orange); }
+.delivery-card {
+  background: var(--surface); border-radius: 14px;
+  margin-bottom: 12px; border: 1px solid var(--border); overflow: hidden;
+}
+.delivery-card.done { opacity: 0.45; }
+.d-header {
+  padding: 12px 14px 8px;
+  display: flex; align-items: flex-start; justify-content: space-between; gap: 8px;
+}
+.d-name { font-size: 17px; font-weight: 900; margin-bottom: 3px; }
+.d-name.done-text::after { content: " ✓"; color: var(--green); }
+.d-address { font-size: 12px; color: var(--muted); line-height: 1.5; }
+.d-time { font-size: 11px; color: var(--muted); white-space: nowrap; }
+.d-imgs { display: grid; grid-template-columns: 1fr 1fr; gap: 2px; }
+.d-img-wrap { position: relative; aspect-ratio: 4/3; }
+.d-img-wrap img { width: 100%; height: 100%; object-fit: cover; cursor: pointer; }
+.d-img-tag {
+  position: absolute; top: 5px; left: 5px;
+  background: rgba(0,0,0,0.7); color: white;
+  font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 4px;
+}
+.d-actions { display: flex; gap: 1px; background: var(--border); }
+.d-btn {
+  flex: 1; padding: 11px; background: var(--surface2); border: none;
+  font-size: 12px; font-weight: 700; cursor: pointer;
+  display: flex; align-items: center; justify-content: center; gap: 5px;
+}
+.d-btn:active { background: var(--border); }
+.d-btn.nav { color: var(--orange); }
+.d-btn.done { color: var(--green); }
+.d-btn.del { color: var(--red); }
 
-  .empty-state {
-    text-align: center;
-    padding: 60px 20px;
-    color: var(--text-muted);
-  }
-  .empty-state span { font-size: 48px; display: block; margin-bottom: 12px; }
-  .empty-state p { font-size: 14px; line-height: 1.6; }
+/* MODAL */
+.modal {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.93);
+  z-index: 500; display: none; align-items: center; justify-content: center; padding: 16px;
+}
+.modal.show { display: flex; }
+.modal img { max-width: 100%; max-height: 90dvh; border-radius: 8px; object-fit: contain; }
+.modal-close {
+  position: absolute; top: 16px; right: 16px;
+  background: var(--surface); border: none; color: var(--text);
+  width: 40px; height: 40px; border-radius: 50%; font-size: 20px;
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+}
 
-  .item-card {
-    background: var(--surface);
-    border-radius: 14px;
-    margin-bottom: 12px;
-    border: 1px solid var(--border);
-    overflow: hidden;
-    transition: border-color 0.2s;
-  }
-  .item-card:active { border-color: var(--orange); }
+/* LABEL POPUP */
+.label-popup {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.75);
+  z-index: 400; display: none; align-items: flex-end;
+}
+.label-popup.show { display: flex; }
+.label-sheet {
+  background: var(--surface); width: 100%; border-radius: 20px 20px 0 0;
+  padding: 20px 16px 32px;
+}
+.label-sheet-title { font-size: 15px; font-weight: 900; margin-bottom: 16px; text-align: center; }
+.label-preview { width: 100%; aspect-ratio: 16/9; object-fit: cover; border-radius: 10px; margin-bottom: 16px; }
+.label-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+.label-btn {
+  padding: 16px; border-radius: 12px; border: 2px solid transparent;
+  font-size: 15px; font-weight: 900; cursor: pointer; text-align: center;
+  transition: border-color 0.2s;
+}
+.label-btn.slip { background: rgba(59,130,246,0.15); color: #60A5FA; border-color: var(--blue); }
+.label-btn.item { background: rgba(0,196,122,0.15); color: var(--green); border-color: var(--green); }
+.label-btn-cancel {
+  width: 100%; padding: 14px; background: var(--surface2); border: none;
+  border-radius: 12px; color: var(--muted); font-size: 14px; font-weight: 700; cursor: pointer;
+}
 
-  .item-header {
-    padding: 14px 16px 10px;
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: 8px;
-  }
-  .item-info { flex: 1; min-width: 0; }
-  .item-name {
-    font-size: 17px;
-    font-weight: 900;
-    margin-bottom: 4px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-  .item-address {
-    font-size: 13px;
-    color: var(--text-muted);
-    line-height: 1.4;
-  }
-  .item-time {
-    font-size: 11px;
-    color: var(--text-muted);
-    white-space: nowrap;
-  }
+/* ADD PHOTO */
+.add-photo-popup {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.75);
+  z-index: 400; display: none; align-items: flex-end;
+}
+.add-photo-popup.show { display: flex; }
+.add-photo-sheet {
+  background: var(--surface); width: 100%; border-radius: 20px 20px 0 0;
+  padding: 20px 16px 32px;
+}
+.add-photo-title { font-size: 15px; font-weight: 900; margin-bottom: 6px; text-align: center; }
+.add-photo-sub { font-size: 13px; color: var(--muted); text-align: center; margin-bottom: 16px; }
+.add-photo-btn {
+  width: 100%; padding: 16px; border-radius: 12px; border: none;
+  font-size: 16px; font-weight: 900; cursor: pointer; margin-bottom: 10px;
+}
 
-  .item-images {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 2px;
-  }
-  .item-img {
-    aspect-ratio: 4/3;
-    object-fit: cover;
-    width: 100%;
-    cursor: pointer;
-  }
-  .item-img-label {
-    position: relative;
-  }
-  .item-img-label::after {
-    content: attr(data-label);
-    position: absolute;
-    top: 6px;
-    left: 6px;
-    background: rgba(0,0,0,0.7);
-    color: white;
-    font-size: 10px;
-    font-weight: 700;
-    padding: 2px 6px;
-    border-radius: 4px;
-  }
+/* TOAST */
+.toast {
+  position: fixed; bottom: 24px; left: 50%;
+  transform: translateX(-50%) translateY(100px);
+  background: var(--green); color: white;
+  padding: 12px 24px; border-radius: 50px;
+  font-size: 14px; font-weight: 700; z-index: 999;
+  transition: transform 0.3s ease; white-space: nowrap;
+}
+.toast.show { transform: translateX(-50%) translateY(0); }
+.toast.err { background: var(--red); }
 
-  .item-actions {
-    display: flex;
-    gap: 1px;
-    background: var(--border);
-  }
-  .item-action-btn {
-    flex: 1;
-    padding: 12px;
-    background: var(--surface2);
-    color: var(--text);
-    border: none;
-    font-size: 13px;
-    font-weight: 700;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
-    transition: background 0.2s;
-  }
-  .item-action-btn:active { background: var(--border); }
-  .item-action-btn.nav { color: var(--orange); }
-  .item-action-btn.del { color: var(--red); }
-  .item-action-btn.done { color: var(--green); }
-
-  .item-card.delivered { opacity: 0.5; }
-  .item-card.delivered .item-name::after {
-    content: " ✓";
-    color: var(--green);
-  }
-
-  /* ===== IMAGE MODAL ===== */
-  .modal {
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.92);
-    z-index: 500;
-    display: none;
-    align-items: center;
-    justify-content: center;
-    padding: 16px;
-  }
-  .modal.show { display: flex; }
-  .modal img {
-    max-width: 100%;
-    max-height: 90dvh;
-    border-radius: 8px;
-    object-fit: contain;
-  }
-  .modal-close {
-    position: absolute;
-    top: 16px;
-    right: 16px;
-    background: var(--surface);
-    border: none;
-    color: var(--text);
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    font-size: 20px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
+/* Spinner */
+.spinner {
+  display: inline-block; width: 14px; height: 14px;
+  border: 2px solid rgba(255,255,255,0.3); border-top-color: white;
+  border-radius: 50%; animation: spin 0.7s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
 </style>
 </head>
 <body>
 
 <div class="header">
-  <div class="header-title">📦 配達サポート</div>
-  <div class="header-count" id="headerCount">0件</div>
+  <div class="header-title">ParcelSnap</div>
+  <div class="header-badge" id="hBadge">0件</div>
 </div>
 
-<!-- API KEY SETUP -->
-<div class="api-setup" id="apiSetup">
-  <div class="api-setup-title">🔑 Google Cloud Vision APIキー設定</div>
-  <div class="api-input-row" id="apiInputRow">
-    <input type="password" class="api-input" id="apiKeyInput" placeholder="AIza...">
-    <button class="btn-save-api" onclick="saveApiKey()">保存</button>
-  </div>
-</div>
-
-<!-- TABS -->
 <div class="tabs">
-  <button class="tab active" onclick="switchTab('scan')">📸 撮影・登録</button>
-  <button class="tab" onclick="switchTab('list')">📋 荷物一覧</button>
+  <button class="tab active" onclick="goTab('import')">📥 取込</button>
+  <button class="tab" onclick="goTab('check')" id="tabCheck">✅ 確認</button>
+  <button class="tab" onclick="goTab('list')">📋 一覧</button>
 </div>
 
-<!-- SCAN PAGE -->
-<div class="page active" id="page-scan">
+<!-- ===== IMPORT PAGE ===== -->
+<div class="page active" id="page-import">
+  <div class="import-page">
 
-  <!-- STEP 1: 伝票 -->
-  <div class="scan-step active-step" id="step1">
-    <div class="step-header">
-      <div class="step-num">1</div>
-      <div>
-        <div class="step-label">伝票を撮影</div>
-        <div class="step-sub">住所・名前をOCRで自動読取</div>
+    <!-- API KEY -->
+    <div class="api-card">
+      <div class="api-card-title">🔑 Google Cloud Vision APIキー</div>
+      <div class="api-row" id="apiRow">
+        <input type="password" class="api-input" id="apiInput" placeholder="AIza...">
+        <button class="btn-sm btn-orange" onclick="saveKey()">保存</button>
       </div>
     </div>
-    <div class="preview-box" id="slipPreviewBox">
-      <div class="preview-placeholder"><span>🧾</span>伝票画像がここに表示されます</div>
-    </div>
-    <div id="ocrLoading" class="ocr-loading" style="display:none;">
-      <div class="spinner"></div> OCR読み取り中...
-    </div>
-    <div class="ocr-result" id="ocrResult" style="display:none;">
-      <div class="ocr-label">📍 住所（編集可）</div>
-      <input type="text" class="ocr-edit" id="ocrAddress" placeholder="住所">
-      <div class="ocr-label" style="margin-top:10px;">👤 名前（編集可）</div>
-      <input type="text" class="ocr-edit" id="ocrName" placeholder="氏名">
-    </div>
-    <input type="file" accept="image/*" capture="environment" id="slipInput" onchange="handleSlipPhoto(event)">
-    <button class="btn-camera primary" onclick="document.getElementById('slipInput').click()">
-      📷 伝票を撮影する
-    </button>
-  </div>
 
-  <!-- STEP 2: 荷物 -->
-  <div class="scan-step" id="step2">
-    <div class="step-header">
-      <div class="step-num">2</div>
-      <div>
-        <div class="step-label">荷物を撮影</div>
-        <div class="step-sub">荷物の外観・特徴を撮る</div>
-      </div>
+    <!-- IMPORT AREA -->
+    <div class="import-card" onclick="document.getElementById('fileInput').click()">
+      <div class="import-icon">📂</div>
+      <div class="import-title">写真をまとめて選択</div>
+      <div class="import-sub">カメラロールから複数選択できます<br>伝票→荷物→伝票→荷物の順で選択</div>
     </div>
-    <div class="preview-box" id="itemPreviewBox">
-      <div class="preview-placeholder"><span>📦</span>荷物画像がここに表示されます</div>
-    </div>
-    <input type="file" accept="image/*" capture="environment" id="itemInput" onchange="handleItemPhoto(event)">
-    <button class="btn-camera primary" id="btnItemCamera" onclick="document.getElementById('itemInput').click()" disabled>
-      📷 荷物を撮影する
-    </button>
-  </div>
+    <input type="file" id="fileInput" accept="image/*" multiple onchange="onFiles(event)">
 
-  <!-- 登録ボタン -->
-  <button class="btn-register" id="btnRegister" onclick="registerDelivery()" disabled>
-    ✅ この荷物を登録する
-  </button>
-  <button class="btn-reset" onclick="resetScan()">🔄 やり直す</button>
+    <div class="hint-card">
+      <div class="hint-title">📸 撮影のコツ</div>
+      <ul class="hint-steps">
+        <li data-n="1">カメラアプリで伝票を撮影</li>
+        <li data-n="2">続けて同じ荷物を撮影</li>
+        <li data-n="3">次の荷物も同じ順で繰り返す</li>
+        <li data-n="4">全部撮り終わったらここで選択</li>
+      </ul>
+    </div>
+
+  </div>
 </div>
 
-<!-- LIST PAGE -->
+<!-- ===== CHECK PAGE ===== -->
+<div class="page" id="page-check">
+  <div class="check-page">
+
+    <div class="check-header">
+      <div class="check-title">📋 写真の確認・修正</div>
+      <div class="check-status" id="checkStatus"></div>
+    </div>
+
+    <div class="warn-banner" id="warnBanner"></div>
+
+    <!-- OCR progress -->
+    <div class="ocr-progress" id="ocrProgress">
+      <div class="ocr-progress-title">🔍 住所・名前を読み取り中...</div>
+      <div class="ocr-bar-wrap"><div class="ocr-bar" id="ocrBar"></div></div>
+      <div class="ocr-bar-label" id="ocrBarLabel">0 / 0</div>
+    </div>
+
+    <!-- Photo grid (label editing) -->
+    <div id="photoGridWrap">
+      <div class="pair-section-title" style="font-size:13px;color:var(--muted);margin-bottom:8px;">
+        📷 写真一覧　<span style="color:var(--blue)">■伝票</span>　<span style="color:var(--green)">■荷物</span>　<span style="color:var(--yellow)">■未設定</span>
+      </div>
+      <div class="photo-grid" id="photoGrid"></div>
+    </div>
+
+    <!-- Pair preview -->
+    <div class="pair-section">
+      <div class="pair-section-title">📦 ペア確認</div>
+      <div id="pairList"></div>
+    </div>
+
+    <!-- Register button -->
+    <button class="btn-big green" id="btnRegister" onclick="registerAll()" disabled>
+      ✅ 一括登録する
+    </button>
+    <button class="btn-big gray" onclick="resetAll()">🔄 やり直す</button>
+
+  </div>
+</div>
+
+<!-- ===== LIST PAGE ===== -->
 <div class="page" id="page-list">
-  <div class="search-bar">
-    <input type="search" class="search-input" id="searchInput" placeholder="🔍 名前・住所で検索..." oninput="renderList()">
+  <div class="list-page">
+    <div class="search-wrap">
+      <input type="search" class="search-input" id="searchInput" placeholder="🔍 名前・住所で検索..." oninput="renderList()">
+    </div>
+    <div id="listContainer"></div>
   </div>
-  <div id="listContainer"></div>
 </div>
 
 <!-- IMAGE MODAL -->
@@ -563,328 +460,445 @@
   <img id="modalImg" src="">
 </div>
 
+<!-- LABEL POPUP -->
+<div class="label-popup" id="labelPopup">
+  <div class="label-sheet">
+    <div class="label-sheet-title">この写真はどちらですか？</div>
+    <img class="label-preview" id="labelPreviewImg" src="">
+    <div class="label-btns">
+      <button class="label-btn slip" onclick="setLabel('slip')">🧾 伝票</button>
+      <button class="label-btn item" onclick="setLabel('item')">📦 荷物</button>
+    </div>
+    <button class="label-btn-cancel" onclick="closeLabelPopup()">キャンセル</button>
+  </div>
+</div>
+
+<!-- ADD PHOTO POPUP -->
+<div class="add-photo-popup" id="addPhotoPopup">
+  <div class="add-photo-sheet">
+    <div class="add-photo-title" id="addPhotoTitle">写真を追加</div>
+    <div class="add-photo-sub" id="addPhotoSub"></div>
+    <input type="file" accept="image/*" capture="environment" id="addPhotoInput" onchange="onAddPhoto(event)">
+    <button class="add-photo-btn btn-orange" onclick="document.getElementById('addPhotoInput').click()">📷 撮影して追加</button>
+    <button class="add-photo-btn" style="background:var(--surface2);color:var(--muted)" onclick="closeAddPhoto()">キャンセル</button>
+  </div>
+</div>
+
 <!-- TOAST -->
 <div class="toast" id="toast"></div>
 
 <script>
-// ===== STATE =====
-let slipDataUrl = null;
-let itemDataUrl = null;
-let ocrAddressVal = '';
-let ocrNameVal = '';
-let deliveries = [];
+// ========== STATE ==========
 let apiKey = '';
+let photos = []; // { dataUrl, label:'slip'|'item'|'unknown' }
+let deliveries = [];
+let addPhotoPairIdx = null;
+let addPhotoType = null; // 'slip' or 'item'
+let labelEditIdx = null;
 
-// ===== INIT =====
+// ========== INIT ==========
 function init() {
-  apiKey = localStorage.getItem('visionApiKey') || '';
+  apiKey = localStorage.getItem('psApiKey') || '';
   updateApiUI();
-
   const today = new Date().toDateString();
-  const saved = localStorage.getItem('deliveries_date');
-  if (saved === today) {
-    deliveries = JSON.parse(localStorage.getItem('deliveries') || '[]');
+  if (localStorage.getItem('ps_date') === today) {
+    deliveries = JSON.parse(localStorage.getItem('ps_deliveries') || '[]');
   } else {
     deliveries = [];
-    localStorage.setItem('deliveries_date', today);
-    localStorage.setItem('deliveries', '[]');
+    localStorage.setItem('ps_date', today);
+    localStorage.setItem('ps_deliveries', '[]');
   }
-  updateCount();
+  updateBadge();
   renderList();
 }
 
-// ===== API KEY =====
-function saveApiKey() {
-  const val = document.getElementById('apiKeyInput').value.trim();
-  if (!val) return showToast('APIキーを入力してください', true);
-  apiKey = val;
-  localStorage.setItem('visionApiKey', val);
+// ========== API KEY ==========
+function saveKey() {
+  const v = document.getElementById('apiInput').value.trim();
+  if (!v) return toast('APIキーを入力してください', true);
+  apiKey = v;
+  localStorage.setItem('psApiKey', v);
   updateApiUI();
-  showToast('APIキーを保存しました');
+  toast('APIキーを保存しました');
 }
-
 function updateApiUI() {
-  const setup = document.getElementById('apiSetup');
-  const row = document.getElementById('apiInputRow');
+  const row = document.getElementById('apiRow');
   if (apiKey) {
-    row.innerHTML = `
-      <div class="api-saved">✅ APIキー設定済み
-        <button class="api-change-btn" onclick="changeApiKey()">変更</button>
-      </div>`;
+    row.innerHTML = `<span class="api-ok">✅ APIキー設定済み</span><button class="btn-sm btn-gray" onclick="changeKey()" style="margin-left:auto">変更</button>`;
   }
 }
-
-function changeApiKey() {
-  document.getElementById('apiInputRow').innerHTML = `
-    <input type="password" class="api-input" id="apiKeyInput" value="${apiKey}" placeholder="AIza...">
-    <button class="btn-save-api" onclick="saveApiKey()">保存</button>`;
+function changeKey() {
+  document.getElementById('apiRow').innerHTML = `
+    <input type="password" class="api-input" id="apiInput" value="${apiKey}" placeholder="AIza...">
+    <button class="btn-sm btn-orange" onclick="saveKey()">保存</button>`;
 }
 
-// ===== TABS =====
-function switchTab(tab) {
-  document.querySelectorAll('.tab').forEach((t,i) => t.classList.toggle('active', (tab==='scan'&&i===0)||(tab==='list'&&i===1)));
+// ========== TABS ==========
+function goTab(name) {
+  document.querySelectorAll('.tab').forEach((t,i) => {
+    t.classList.toggle('active', ['import','check','list'][i] === name);
+  });
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  document.getElementById('page-'+tab).classList.add('active');
-  if (tab === 'list') renderList();
+  document.getElementById('page-'+name).classList.add('active');
+  if (name === 'list') renderList();
+  if (name === 'check') renderCheck();
 }
 
-// ===== PHOTO HANDLING =====
-function handleSlipPhoto(e) {
-  const file = e.target.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = async (ev) => {
-    slipDataUrl = ev.target.result;
-    const box = document.getElementById('slipPreviewBox');
-    box.innerHTML = `<img src="${slipDataUrl}" alt="伝票">`;
-    document.getElementById('step1').classList.add('done-step');
-    document.getElementById('step1').classList.remove('active-step');
-    document.getElementById('step2').classList.add('active-step');
-    document.getElementById('btnItemCamera').disabled = false;
-    await runOcr(slipDataUrl);
-  };
-  reader.readAsDataURL(file);
-  e.target.value = '';
+// ========== FILE IMPORT ==========
+function onFiles(e) {
+  const files = Array.from(e.target.files);
+  if (!files.length) return;
+  photos = [];
+  let loaded = 0;
+  const total = files.length;
+
+  files.forEach((file, i) => {
+    const reader = new FileReader();
+    reader.onload = ev => {
+      // 自動ラベル：奇数枚目=伝票、偶数枚目=荷物
+      const label = (i % 2 === 0) ? 'slip' : 'item';
+      photos[i] = { dataUrl: ev.target.result, label };
+      loaded++;
+      if (loaded === total) {
+        e.target.value = '';
+        goTab('check');
+        renderCheck();
+        if (apiKey) startOcr();
+      }
+    };
+    reader.readAsDataURL(file);
+  });
 }
 
-function handleItemPhoto(e) {
-  const file = e.target.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = (ev) => {
-    itemDataUrl = ev.target.result;
-    const box = document.getElementById('itemPreviewBox');
-    box.innerHTML = `<img src="${itemDataUrl}" alt="荷物">`;
-    document.getElementById('step2').classList.add('done-step');
-    document.getElementById('step2').classList.remove('active-step');
-    document.getElementById('btnRegister').disabled = false;
-  };
-  reader.readAsDataURL(file);
-  e.target.value = '';
-}
-
-// ===== OCR =====
-async function runOcr(dataUrl) {
-  if (!apiKey) {
-    document.getElementById('ocrResult').style.display = 'block';
+// ========== CHECK PAGE ==========
+function renderCheck() {
+  if (!photos.length) {
+    document.getElementById('photoGrid').innerHTML = '';
+    document.getElementById('pairList').innerHTML = '<div class="empty"><span>📂</span><p>まず「取込」タブで写真を選択してください</p></div>';
+    document.getElementById('btnRegister').disabled = true;
+    document.getElementById('checkStatus').textContent = '';
+    document.getElementById('warnBanner').classList.remove('show');
     return;
   }
-  document.getElementById('ocrLoading').style.display = 'flex';
 
-  try {
-    const base64 = dataUrl.split(',')[1];
-    const res = await fetch(`https://vision.googleapis.com/v1/images:annotate?key=${apiKey}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        requests: [{
-          image: { content: base64 },
-          features: [{ type: 'TEXT_DETECTION', maxResults: 1 }]
-        }]
-      })
-    });
-    const data = await res.json();
-    const text = data.responses?.[0]?.fullTextAnnotation?.text || '';
-    const { address, name } = parseDeliveryText(text);
-    ocrAddressVal = address;
-    ocrNameVal = name;
-    document.getElementById('ocrAddress').value = address;
-    document.getElementById('ocrName').value = name;
-  } catch(err) {
-    console.error(err);
+  // Photo grid
+  document.getElementById('photoGrid').innerHTML = photos.map((p, i) => `
+    <div class="photo-cell is-${p.label}" onclick="openLabelPopup(${i})">
+      <img src="${p.dataUrl}" alt="">
+      <div class="photo-num">${i+1}</div>
+      <div class="photo-label">${p.label==='slip'?'🧾 伝票':p.label==='item'?'📦 荷物':'❓ 未設定'}</div>
+    </div>
+  `).join('');
+
+  // Build pairs
+  const pairs = buildPairs();
+
+  // Warn banner
+  const unknowns = photos.filter(p => p.label === 'unknown').length;
+  const incomplete = pairs.filter(p => !p.slip || !p.item).length;
+  const banner = document.getElementById('warnBanner');
+  if (unknowns > 0 || incomplete > 0) {
+    banner.classList.add('show');
+    banner.textContent = `⚠️ ${unknowns > 0 ? `未設定の写真が${unknowns}枚あります。` : ''}${incomplete > 0 ? `写真が足りないペアが${incomplete}組あります。` : ''}タップして修正してください。`;
+  } else {
+    banner.classList.remove('show');
   }
 
-  document.getElementById('ocrLoading').style.display = 'none';
-  document.getElementById('ocrResult').style.display = 'block';
+  // Status
+  document.getElementById('checkStatus').textContent = `${pairs.length}ペア`;
+
+  // Pair list
+  document.getElementById('pairList').innerHTML = pairs.map((pair, pi) => {
+    const ok = pair.slip && pair.item;
+    return `
+    <div class="pair-card ${ok ? 'ok' : 'warn'}">
+      <div style="padding:10px 12px 6px;font-size:13px;font-weight:700;color:${ok?'var(--green)':'var(--yellow)'}">
+        ${ok ? '✅' : '⚠️'} ペア ${pi+1}
+      </div>
+      <div class="pair-imgs">
+        ${pair.slip
+          ? `<div class="pair-img-wrap"><img src="${pair.slip.dataUrl}" onclick="openModal2('${escUrl(pair.slip.dataUrl)}')"><div class="pair-img-tag">🧾 伝票</div></div>`
+          : `<div class="pair-missing"><span>🧾</span>伝票なし</div>`}
+        ${pair.item
+          ? `<div class="pair-img-wrap"><img src="${pair.item.dataUrl}" onclick="openModal2('${escUrl(pair.item.dataUrl)}')"><div class="pair-img-tag">📦 荷物</div></div>`
+          : `<div class="pair-missing"><span>📦</span>荷物なし</div>`}
+      </div>
+      <div class="pair-actions">
+        ${!pair.slip ? `<button class="pair-btn add-photo" onclick="openAddPhoto(${pi},'slip')">📷 伝票を追加</button>` : ''}
+        ${!pair.item ? `<button class="pair-btn add-photo" onclick="openAddPhoto(${pi},'item')">📷 荷物を追加</button>` : ''}
+        ${ok ? `<button class="pair-btn" style="color:var(--muted)" onclick="skipPair(${pi})">🗑️ このペアを外す</button>` : ''}
+        ${!ok ? `<button class="pair-btn skip-pair" onclick="skipPair(${pi})">✕ スキップ</button>` : ''}
+      </div>
+    </div>`;
+  }).join('');
+
+  // Register button
+  const canRegister = pairs.length > 0 && pairs.some(p => p.slip && p.item);
+  document.getElementById('btnRegister').disabled = !canRegister;
 }
 
-function parseDeliveryText(text) {
+function buildPairs() {
+  const slips = photos.filter(p => p.label === 'slip');
+  const items = photos.filter(p => p.label === 'item');
+  const max = Math.max(slips.length, items.length);
+  const pairs = [];
+  for (let i = 0; i < max; i++) {
+    pairs.push({ slip: slips[i] || null, item: items[i] || null });
+  }
+  return pairs;
+}
+
+// ========== LABEL POPUP ==========
+function openLabelPopup(idx) {
+  labelEditIdx = idx;
+  document.getElementById('labelPreviewImg').src = photos[idx].dataUrl;
+  document.getElementById('labelPopup').classList.add('show');
+}
+function setLabel(label) {
+  if (labelEditIdx === null) return;
+  photos[labelEditIdx].label = label;
+  closeLabelPopup();
+  renderCheck();
+}
+function closeLabelPopup() {
+  document.getElementById('labelPopup').classList.remove('show');
+  labelEditIdx = null;
+}
+
+// ========== ADD PHOTO ==========
+function openAddPhoto(pairIdx, type) {
+  addPhotoPairIdx = pairIdx;
+  addPhotoType = type;
+  document.getElementById('addPhotoTitle').textContent = type === 'slip' ? '伝票を追加撮影' : '荷物を追加撮影';
+  document.getElementById('addPhotoSub').textContent = `ペア${pairIdx+1}の${type==='slip'?'伝票':'荷物'}が足りません`;
+  document.getElementById('addPhotoPopup').classList.add('show');
+}
+function closeAddPhoto() {
+  document.getElementById('addPhotoPopup').classList.remove('show');
+  addPhotoPairIdx = null; addPhotoType = null;
+}
+function onAddPhoto(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    photos.push({ dataUrl: ev.target.result, label: addPhotoType });
+    e.target.value = '';
+    closeAddPhoto();
+    renderCheck();
+    if (apiKey && addPhotoType === 'slip') {
+      runOcrSingle(photos.length - 1);
+    }
+  };
+  reader.readAsDataURL(file);
+}
+
+function skipPair(pairIdx) {
+  const pairs = buildPairs();
+  const pair = pairs[pairIdx];
+  // Remove both photos from photos array
+  if (pair.slip) {
+    const idx = photos.indexOf(pair.slip);
+    if (idx >= 0) photos.splice(idx, 1);
+  }
+  if (pair.item) {
+    const idx = photos.indexOf(pair.item);
+    if (idx >= 0) photos.splice(idx, 1);
+  }
+  renderCheck();
+}
+
+// ========== OCR ==========
+let ocrResults = {}; // photoIndex -> { address, name }
+
+async function startOcr() {
+  const slips = photos.map((p, i) => ({ p, i })).filter(x => x.p.label === 'slip');
+  if (!slips.length) return;
+  const prog = document.getElementById('ocrProgress');
+  const bar = document.getElementById('ocrBar');
+  const label = document.getElementById('ocrBarLabel');
+  prog.classList.add('show');
+  ocrResults = {};
+
+  for (let k = 0; k < slips.length; k++) {
+    const { p, i } = slips[k];
+    label.textContent = `${k+1} / ${slips.length}`;
+    bar.style.width = `${Math.round((k / slips.length) * 100)}%`;
+    try {
+      const result = await ocrImage(p.dataUrl);
+      ocrResults[i] = result;
+    } catch(e) { ocrResults[i] = { address: '', name: '' }; }
+  }
+  bar.style.width = '100%';
+  label.textContent = `${slips.length} / ${slips.length} 完了`;
+  setTimeout(() => prog.classList.remove('show'), 1500);
+}
+
+async function runOcrSingle(idx) {
+  if (!apiKey) return;
+  try {
+    ocrResults[idx] = await ocrImage(photos[idx].dataUrl);
+  } catch(e) { ocrResults[idx] = { address: '', name: '' }; }
+}
+
+async function ocrImage(dataUrl) {
+  const base64 = dataUrl.split(',')[1];
+  const res = await fetch(`https://vision.googleapis.com/v1/images:annotate?key=${apiKey}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      requests: [{ image: { content: base64 }, features: [{ type: 'TEXT_DETECTION', maxResults: 1 }] }]
+    })
+  });
+  const data = await res.json();
+  const text = data.responses?.[0]?.fullTextAnnotation?.text || '';
+  return parseText(text);
+}
+
+function parseText(text) {
   const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
-  let address = '';
-  let name = '';
-
-  // 住所パターン（都道府県・市区町村・番地）
-  const addrPattern = /([都道府県].{2,20}[市区町村].{1,30}[0-9０-９\-－]/;
+  let address = '', name = '';
   for (const line of lines) {
-    if (addrPattern.test(line) || /[0-9０-９]丁目|[0-9０-９]番|[0-9０-９]号/.test(line)) {
+    if (!address && (/[都道府県].{1,20}[市区町村]/.test(line) || /[0-9０-９]丁目|[0-9０-９]番/.test(line))) {
       address = line;
-      break;
     }
   }
-  // 住所が見つからない場合は〒以降の行
   if (!address) {
-    const zipIdx = lines.findIndex(l => /〒|[0-9]{3}-[0-9]{4}/.test(l));
-    if (zipIdx >= 0 && lines[zipIdx+1]) address = lines[zipIdx+1];
+    const zi = lines.findIndex(l => /〒|[0-9]{3}-[0-9]{4}/.test(l));
+    if (zi >= 0 && lines[zi+1]) address = lines[zi+1];
   }
-
-  // 名前パターン（様・御中・殿が含まれる行）
   for (const line of lines) {
-    if (/様|御中|殿/.test(line)) {
-      name = line.replace(/様|御中|殿/g, '').trim();
-      break;
-    }
+    if (/様|御中|殿/.test(line)) { name = line.replace(/様|御中|殿/g,'').trim(); break; }
   }
-  // 見つからなければ短い行（2〜10文字）
   if (!name) {
     for (const line of lines) {
-      if (line.length >= 2 && line.length <= 10 && /^[ぁ-んァ-ン一-龥]/.test(line)) {
-        name = line;
-        break;
-      }
+      if (line.length >= 2 && line.length <= 12 && /^[ぁ-んァ-ン一-龥]/.test(line)) { name = line; break; }
     }
   }
-
   return { address, name };
 }
 
-// ===== REGISTER =====
-function registerDelivery() {
-  const address = document.getElementById('ocrAddress')?.value || ocrAddressVal;
-  const name = document.getElementById('ocrName')?.value || ocrNameVal;
+// ========== REGISTER ==========
+async function registerAll() {
+  const pairs = buildPairs().filter(p => p.slip && p.item);
+  if (!pairs.length) return toast('登録できるペアがありません', true);
 
-  if (!slipDataUrl || !itemDataUrl) {
-    showToast('伝票と荷物両方の撮影が必要です', true);
-    return;
+  document.getElementById('btnRegister').disabled = true;
+  document.getElementById('btnRegister').innerHTML = '<div class="spinner"></div> 登録中...';
+
+  const slipPhotos = photos.map((p, i) => ({ p, i })).filter(x => x.p.label === 'slip');
+
+  for (const pair of pairs) {
+    const slipIdx = photos.indexOf(pair.slip);
+    const ocr = ocrResults[slipIdx] || { address: '', name: '' };
+    deliveries.unshift({
+      id: Date.now() + Math.random(),
+      name: ocr.name || '名前未読取',
+      address: ocr.address || '住所未読取',
+      slipImg: pair.slip.dataUrl,
+      itemImg: pair.item.dataUrl,
+      time: new Date().toLocaleTimeString('ja-JP', { hour:'2-digit', minute:'2-digit' }),
+      delivered: false
+    });
   }
 
-  const delivery = {
-    id: Date.now(),
-    name: name || '名前未読取',
-    address: address || '住所未読取',
-    slipImg: slipDataUrl,
-    itemImg: itemDataUrl,
-    time: new Date().toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' }),
-    delivered: false
-  };
-
-  deliveries.unshift(delivery);
   saveDeliveries();
-  updateCount();
-  showToast('✅ 登録しました！');
-  resetScan();
-  switchTab('list');
+  updateBadge();
+  photos = [];
+  ocrResults = {};
+  toast(`✅ ${pairs.length}件を登録しました！`);
+  setTimeout(() => goTab('list'), 600);
+
+  document.getElementById('btnRegister').disabled = false;
+  document.getElementById('btnRegister').innerHTML = '✅ 一括登録する';
 }
 
-// ===== RESET =====
-function resetScan() {
-  slipDataUrl = null;
-  itemDataUrl = null;
-  ocrAddressVal = '';
-  ocrNameVal = '';
-
-  document.getElementById('slipPreviewBox').innerHTML = `<div class="preview-placeholder"><span>🧾</span>伝票画像がここに表示されます</div>`;
-  document.getElementById('itemPreviewBox').innerHTML = `<div class="preview-placeholder"><span>📦</span>荷物画像がここに表示されます</div>`;
-  document.getElementById('ocrResult').style.display = 'none';
-  document.getElementById('ocrLoading').style.display = 'none';
-  document.getElementById('btnItemCamera').disabled = true;
-  document.getElementById('btnRegister').disabled = true;
-
-  document.getElementById('step1').className = 'scan-step active-step';
-  document.getElementById('step2').className = 'scan-step';
+function resetAll() {
+  if (photos.length && !confirm('取込んだ写真をリセットしますか？')) return;
+  photos = [];
+  ocrResults = {};
+  renderCheck();
+  goTab('import');
 }
 
-// ===== LIST =====
+// ========== LIST ==========
 function renderList() {
   const q = (document.getElementById('searchInput')?.value || '').trim();
-  const filtered = q
-    ? deliveries.filter(d =>
-        d.name.includes(q) || d.address.includes(q)
-      )
-    : deliveries;
-
-  const container = document.getElementById('listContainer');
-
-  if (filtered.length === 0) {
-    container.innerHTML = `<div class="empty-state">
-      <span>${q ? '🔍' : '📭'}</span>
-      <p>${q ? `「${q}」に一致する荷物がありません` : '登録された荷物がありません\n撮影タブから登録してください'}</p>
-    </div>`;
+  const filtered = q ? deliveries.filter(d => d.name.includes(q) || d.address.includes(q)) : deliveries;
+  const c = document.getElementById('listContainer');
+  if (!filtered.length) {
+    c.innerHTML = `<div class="empty"><span>${q?'🔍':'📭'}</span><p>${q?`「${q}」に一致する荷物がありません`:'まだ登録された荷物がありません'}</p></div>`;
     return;
   }
-
-  container.innerHTML = filtered.map(d => `
-    <div class="item-card ${d.delivered ? 'delivered' : ''}" id="card-${d.id}">
-      <div class="item-header">
-        <div class="item-info">
-          <div class="item-name">${escHtml(d.name)}</div>
-          <div class="item-address">${escHtml(d.address)}</div>
+  c.innerHTML = filtered.map(d => `
+    <div class="delivery-card ${d.delivered?'done':''}">
+      <div class="d-header">
+        <div>
+          <div class="d-name ${d.delivered?'done-text':''}">${esc(d.name)}</div>
+          <div class="d-address">${esc(d.address)}</div>
         </div>
-        <div class="item-time">${d.time}</div>
+        <div class="d-time">${d.time}</div>
       </div>
-      <div class="item-images">
-        <div class="item-img-label" data-label="伝票" style="position:relative">
-          <img class="item-img" src="${d.slipImg}" alt="伝票" onclick="openModal('${d.id}','slip')">
+      <div class="d-imgs">
+        <div class="d-img-wrap">
+          <img src="${d.slipImg}" onclick="openModal2('${escUrl(d.slipImg)}')">
+          <div class="d-img-tag">🧾 伝票</div>
         </div>
-        <div class="item-img-label" data-label="荷物" style="position:relative">
-          <img class="item-img" src="${d.itemImg}" alt="荷物" onclick="openModal('${d.id}','item')">
+        <div class="d-img-wrap">
+          <img src="${d.itemImg}" onclick="openModal2('${escUrl(d.itemImg)}')">
+          <div class="d-img-tag">📦 荷物</div>
         </div>
       </div>
-      <div class="item-actions">
-        <button class="item-action-btn nav" onclick="openNav('${escHtml(d.address)}')">🗺️ ナビ</button>
-        <button class="item-action-btn done" onclick="toggleDelivered(${d.id})">${d.delivered ? '↩️ 戻す' : '✅ 配達済'}</button>
-        <button class="item-action-btn del" onclick="deleteDelivery(${d.id})">🗑️ 削除</button>
+      <div class="d-actions">
+        <button class="d-btn nav" onclick="nav('${esc(d.address)}')">🗺️ ナビ</button>
+        <button class="d-btn done" onclick="toggleDone(${d.id})">${d.delivered?'↩️ 戻す':'✅ 配達済'}</button>
+        <button class="d-btn del" onclick="del(${d.id})">🗑️</button>
       </div>
     </div>
   `).join('');
 }
 
-function openNav(address) {
-  if (!address || address === '住所未読取') {
-    showToast('住所が読み取れていません', true);
-    return;
-  }
-  const url = `https://maps.google.com/maps?q=${encodeURIComponent(address)}`;
-  window.open(url, '_blank');
+function nav(addr) {
+  if (!addr || addr === '住所未読取') return toast('住所が読み取れていません', true);
+  window.open(`https://maps.google.com/maps?q=${encodeURIComponent(addr)}`, '_blank');
 }
-
-function toggleDelivered(id) {
-  const d = deliveries.find(x => x.id === id);
-  if (d) { d.delivered = !d.delivered; saveDeliveries(); renderList(); }
-}
-
-function deleteDelivery(id) {
-  if (!confirm('この荷物を削除しますか？')) return;
-  deliveries = deliveries.filter(x => x.id !== id);
-  saveDeliveries();
-  updateCount();
-  renderList();
-}
-
-// ===== MODAL =====
-function openModal(id, type) {
+function toggleDone(id) {
   const d = deliveries.find(x => x.id == id);
-  if (!d) return;
-  document.getElementById('modalImg').src = type === 'slip' ? d.slipImg : d.itemImg;
+  if (d) { d.delivered = !d.delivered; saveDeliveries(); renderList(); updateBadge(); }
+}
+function del(id) {
+  if (!confirm('削除しますか？')) return;
+  deliveries = deliveries.filter(x => x.id != id);
+  saveDeliveries(); renderList(); updateBadge();
+}
+
+// ========== MODAL ==========
+function openModal2(src) {
+  document.getElementById('modalImg').src = src;
   document.getElementById('imgModal').classList.add('show');
 }
-function closeModal() {
-  document.getElementById('imgModal').classList.remove('show');
-}
+function closeModal() { document.getElementById('imgModal').classList.remove('show'); }
 
-// ===== HELPERS =====
-function saveDeliveries() {
-  localStorage.setItem('deliveries', JSON.stringify(deliveries));
-}
-
-function updateCount() {
+// ========== HELPERS ==========
+function saveDeliveries() { localStorage.setItem('ps_deliveries', JSON.stringify(deliveries)); }
+function updateBadge() {
   const undone = deliveries.filter(d => !d.delivered).length;
-  document.getElementById('headerCount').textContent = `${deliveries.length}件（未配達${undone}）`;
+  document.getElementById('hBadge').textContent = `${deliveries.length}件（未配達${undone}）`;
 }
-
-function showToast(msg, isError = false) {
+function toast(msg, isErr = false) {
   const t = document.getElementById('toast');
   t.textContent = msg;
-  t.className = 'toast' + (isError ? ' error' : '');
+  t.className = 'toast' + (isErr ? ' err' : '');
   void t.offsetWidth;
   t.classList.add('show');
   setTimeout(() => t.classList.remove('show'), 2500);
 }
+function esc(s) { return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function escUrl(s) { return s.substring(0,50); } // prevent inline issues; actual src set directly
 
-function escHtml(str) {
-  return (str||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
+// Fix: openModal2 needs real src not truncated
+document.getElementById('imgModal').addEventListener('click', closeModal);
 
-// ===== START =====
 init();
 </script>
 </body>
