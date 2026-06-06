@@ -221,7 +221,7 @@ input[type=file] { display: none; }
 <div class="header">
   <div class="header-title">ParcelSnap</div>
   <div style="display:flex;align-items:center;gap:8px;">
-    <div style="font-size:11px;color:var(--muted)">v3.1</div>
+    <div style="font-size:11px;color:var(--muted)">v3.2</div>
     <div class="header-badge" id="hBadge">0件</div>
   </div>
 </div>
@@ -292,6 +292,15 @@ input[type=file] { display: none; }
 <div class="page" id="page-list">
   <div class="list-page">
     <input type="search" class="search-input" id="searchInput" placeholder="🔍 名前・住所で検索..." oninput="renderList()">
+    <div id="gpsBar" style="display:flex;gap:8px;margin-bottom:14px;align-items:center;">
+      <button id="btnGpsSort" onclick="sortByGps()" style="flex:1;padding:12px;background:var(--surface);border:1px solid var(--border);border-radius:10px;color:var(--text);font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;">
+        📍 現在地から近い順に並び替え
+      </button>
+      <button id="btnGpsReset" onclick="resetSort()" style="display:none;padding:12px 14px;background:var(--surface2);border:none;border-radius:10px;color:var(--muted);font-size:13px;font-weight:700;cursor:pointer;">
+        ✕ 解除
+      </button>
+    </div>
+    <div id="gpsStatus" style="font-size:12px;color:var(--muted);margin-bottom:10px;display:none;"></div>
     <div id="listContainer"></div>
   </div>
 </div>
@@ -774,6 +783,104 @@ function nav(addr) {
   if (!addr || addr === '住所未読取') return showToast('住所が読み取れていません', true);
   window.open(`https://maps.google.com/maps?q=${encodeURIComponent(addr)}`, '_blank');
 }
+// ========== GPS SORT ==========
+let gpsSorted = false;
+let currentLat = null, currentLng = null;
+
+async function sortByGps() {
+  const btn = document.getElementById('btnGpsSort');
+  const status = document.getElementById('gpsStatus');
+  btn.innerHTML = '<div class="spinner" style="border-color:rgba(255,255,255,0.3);border-top-color:var(--orange)"></div> 現在地を取得中...';
+  btn.disabled = true;
+  status.style.display = 'block';
+  status.textContent = '📡 GPS取得中...';
+
+  try {
+    const pos = await getGps();
+    currentLat = pos.coords.latitude;
+    currentLng = pos.coords.longitude;
+    status.textContent = '🔍 住所から座標を計算中...';
+
+    // ジオコーディング（住所→緯度経度）
+    for (const d of deliveries) {
+      if (d.address && d.address !== '住所未読取' && d.lat == null) {
+        try {
+          const gc = await geocode(d.address);
+          d.lat = gc.lat; d.lng = gc.lng;
+        } catch(e) { d.lat = null; d.lng = null; }
+      }
+    }
+
+    // 距離計算
+    for (const d of deliveries) {
+      if (d.lat != null && d.lng != null) {
+        d.distance = calcDist(currentLat, currentLng, d.lat, d.lng);
+      } else {
+        d.distance = null;
+      }
+    }
+
+    // 並び替え：距離あり→近い順、距離なし→後ろ
+    deliveries.sort((a, b) => {
+      if (a.delivered !== b.delivered) return a.delivered ? 1 : -1;
+      if (a.distance == null && b.distance == null) return 0;
+      if (a.distance == null) return 1;
+      if (b.distance == null) return -1;
+      return a.distance - b.distance;
+    });
+
+    gpsSorted = true;
+    saveDeliveries();
+    status.textContent = `✅ 現在地から近い順に並び替えました`;
+    document.getElementById('btnGpsReset').style.display = 'block';
+    btn.innerHTML = '🔄 再取得';
+    btn.disabled = false;
+    renderList();
+  } catch(e) {
+    status.textContent = '❌ GPS取得に失敗しました。位置情報の許可を確認してください。';
+    btn.innerHTML = '📍 現在地から近い順に並び替え';
+    btn.disabled = false;
+  }
+}
+
+function resetSort() {
+  gpsSorted = false;
+  for (const d of deliveries) { d.distance = null; }
+  deliveries.sort((a, b) => b.id - a.id); // 登録順（新しい順）に戻す
+  saveDeliveries();
+  document.getElementById('btnGpsReset').style.display = 'none';
+  document.getElementById('gpsStatus').style.display = 'none';
+  document.getElementById('btnGpsSort').innerHTML = '📍 現在地から近い順に並び替え';
+  renderList();
+}
+
+function getGps() {
+  return new Promise((resolve, reject) => {
+    if (!navigator.geolocation) return reject(new Error('GPS非対応'));
+    navigator.geolocation.getCurrentPosition(resolve, reject, { enableHighAccuracy: true, timeout: 10000 });
+  });
+}
+
+async function geocode(address) {
+  const apiKey = localStorage.getItem('psApiKey') || '';
+  // Google Maps Geocoding API
+  const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(address)}&language=ja&region=JP&key=${apiKey}`;
+  const res = await fetch(url);
+  const data = await res.json();
+  if (data.status !== 'OK' || !data.results.length) throw new Error('geocode failed');
+  const loc = data.results[0].geometry.location;
+  return { lat: loc.lat, lng: loc.lng };
+}
+
+function calcDist(lat1, lng1, lat2, lng2) {
+  // ハバーサイン公式（km）
+  const R = 6371;
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLng = (lng2 - lng1) * Math.PI / 180;
+  const a = Math.sin(dLat/2)**2 + Math.cos(lat1*Math.PI/180) * Math.cos(lat2*Math.PI/180) * Math.sin(dLng/2)**2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+}
+
 function navById(btn) {
   const id = btn.getAttribute('data-id');
   const d = deliveries.find(x => String(x.id) === String(id));
