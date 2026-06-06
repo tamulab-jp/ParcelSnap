@@ -221,7 +221,7 @@ input[type=file] { display: none; }
 <div class="header">
   <div class="header-title">ParcelSnap</div>
   <div style="display:flex;align-items:center;gap:8px;">
-    <div style="font-size:11px;color:var(--muted)">v3.0</div>
+    <div style="font-size:11px;color:var(--muted)">v3.1</div>
     <div class="header-badge" id="hBadge">0件</div>
   </div>
 </div>
@@ -759,11 +759,11 @@ function renderList() {
         <div class="d-time">${d.time}</div>
       </div>
       <div class="d-imgs">
-        <div class="d-img-wrap"><img src="${d.slipImg}" onclick="openModal(${JSON.stringify(d.slipImg)})"><div class="d-img-tag">🧾 伝票</div></div>
-        <div class="d-img-wrap"><img src="${d.itemImg}" onclick="openModal(${JSON.stringify(d.itemImg)})"><div class="d-img-tag">📦 荷物</div></div>
+        <div class="d-img-wrap"><img src="${d.slipImg}" onclick="openModalByEl(this)"><div class="d-img-tag">🧾 伝票</div></div>
+        <div class="d-img-wrap"><img src="${d.itemImg}" onclick="openModalByEl(this)"><div class="d-img-tag">📦 荷物</div></div>
       </div>
       <div class="d-actions">
-        <button class="d-btn nav" onclick="nav(${JSON.stringify(d.address)})">🗺️ ナビ</button>
+        <button class="d-btn nav" data-id="${d.id}" onclick="navById(this)">🗺️ ナビ</button>
         <button class="d-btn done-btn" onclick="toggleDone(${d.id})">${d.delivered?'↩️ 戻す':'✅ 配達済'}</button>
         <button class="d-btn del" onclick="delItem(${d.id})">🗑️</button>
       </div>
@@ -773,6 +773,15 @@ function renderList() {
 function nav(addr) {
   if (!addr || addr === '住所未読取') return showToast('住所が読み取れていません', true);
   window.open(`https://maps.google.com/maps?q=${encodeURIComponent(addr)}`, '_blank');
+}
+function navById(btn) {
+  const id = btn.getAttribute('data-id');
+  const d = deliveries.find(x => String(x.id) === String(id));
+  if (!d) return showToast('データが見つかりません', true);
+  nav(d.address);
+}
+function openModalByEl(img) {
+  openModal(img.src);
 }
 function toggleDone(id) {
   const d = deliveries.find(x => x.id == id);
